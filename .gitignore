@@ -1,4 +1,8 @@
 .env
-data/
-*.csv
 __pycache__/
+venv/
+data/
+reports/
+*.db
+*.csv
+.DS_Store
