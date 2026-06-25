@@ -14,3 +14,20 @@ A Python tool that monitors stock-related X (Twitter) influencers, stores their 
 - **Automated Reporting**: Generates text reports and Excel summaries, then pushes results directly to a Feishu group via webhook.
 
 ## Project Structure
+
+```
+.
+├── config.py            # List of monitored usernames and fetch settings
+├── fetch.py              # X API data fetching logic
+├── db.py                 # SQLite storage and retrieval
+├── analyze.py            # AI analysis via Qwen (Alibaba Cloud MaaS)
+├── report.py             # Text/Excel report generation
+├── send_feishu.py        # Feishu webhook integration
+├── main.py               # Orchestrates the full pipeline
+├── requirements.txt      # Python dependencies
+├── test_token.py         # Quick script to verify X API token validity
+├── test_feishu.py        # Quick script to test Feishu webhook
+├── test_analyze.py       # Quick script to test AI analysis independently
+└── data/                 # SQLite database (gitignored)
+└── reports/              # Generated reports (gitignored)
+```
