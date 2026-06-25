@@ -1,0 +1,32 @@
+name: Daily X Sentiment Report
+
+on:
+  schedule:
+    # GitHub Actions使用UTC时间，北京时间=UTC+8
+    # 北京时间8:30 = UTC 0:30
+    - cron: '30 0 * * *'
+    # 北京时间20:30 = UTC 12:30
+    - cron: '30 12 * * *'
+  workflow_dispatch: {}  # 允许你手动点击触发，方便测试
+
+jobs:
+  run-pipeline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run main pipeline
+        env:
+          X_BEARER_TOKEN: ${{ secrets.X_BEARER_TOKEN }}
+          DASHSCOPE_API_KEY: ${{ secrets.DASHSCOPE_API_KEY }}
+          FEISHU_WEBHOOK_URL: ${{ secrets.FEISHU_WEBHOOK_URL }}
+        run: python main.py
