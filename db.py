@@ -1,5 +1,6 @@
 """SQLite存储模块"""
 
+import os
 import sqlite3
 from datetime import date, timedelta
 
@@ -8,6 +9,11 @@ DB_PATH = "data/tweets.db"
 
 def init_db(db_path: str = DB_PATH):
     """初始化数据库表结构"""
+    # 确保 data 目录存在
+    db_dir = os.path.dirname(db_path)
+    if db_dir and not os.path.exists(db_dir):
+        os.makedirs(db_dir, exist_ok=True)
+    
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute("""
