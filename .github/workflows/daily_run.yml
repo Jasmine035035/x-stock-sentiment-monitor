@@ -2,11 +2,10 @@ name: Daily X Sentiment Report
 
 on:
   schedule:
-    # GitHub Actions使用UTC时间，北京时间=UTC+8
-    # 北京时间8:30 = UTC 0:30
-    - cron: '30 0 * * *'
-    # 北京时间20:30 = UTC 12:30
-    - cron: '30 12 * * *'
+    # 北京时间凌晨4:00 = UTC前一天20:00
+    - cron: '0 20 * * *'
+    # 北京时间下午18:00 = UTC 10:00
+    - cron: '0 10 * * *'
   workflow_dispatch: {}  # 允许你手动点击触发，方便测试
 
 jobs:
