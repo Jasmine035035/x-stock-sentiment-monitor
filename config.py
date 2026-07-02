@@ -4,6 +4,7 @@ USERNAMES = [
     "DariusDale42", 
     "fundstrat", 
     "GerberKawasaki",
+    "elonmusk", 
     "BillAckman", 
     "dylan522p", 
     "dnystedt", 

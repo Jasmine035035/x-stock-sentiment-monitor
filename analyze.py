@@ -1,12 +1,11 @@
-"""分析模块：从SQLite读取数据，构建请求，发给Qwen MaaS服务分析（含网络搜索能力）"""
-
-from market_data import get_market_snapshot
+"""分析模块：从SQLite读取数据，构建请求，发给Qwen MaaS服务分析"""
 
 import os
 import json
 from openai import OpenAI
 from dotenv import load_dotenv
 from db import load_recent_tweets
+from market_data import get_market_snapshot
 
 load_dotenv()
 
