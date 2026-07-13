@@ -1,8 +1,5 @@
 """分析模块：从SQLite读取数据，构建请求，发给Qwen MaaS服务分析"""
 
-import ssl
-ssl._create_default_https_context = ssl._create_unverified_context
-
 import os
 import json
 from openai import OpenAI

@@ -78,7 +78,7 @@ def auto_fill_market_cap(input_path: str, output_path: str = None):
         # 直接复制原文件
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(content)
-        return
+        return output_path
     
     print(f"📊 发现 {len(matches)} 只股票，正在获取实时市值...")
     
@@ -96,7 +96,7 @@ def auto_fill_market_cap(input_path: str, output_path: str = None):
         print("⚠️ 未能获取任何股票的市值数据，请检查网络")
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(content)
-        return
+        return output_path
     
     # 逐条替换：找到 "当前市值" 行并替换
     for code_full, data in real_data_map.items():

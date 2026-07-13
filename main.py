@@ -60,7 +60,7 @@ def run():
     print("\n📊 正在自动填充市值数据...")
     final_path = auto_fill_market_cap(raw_path)
 
-    # 7. 读取最终版内容，打印到终端
+        # 7. 读取最终版内容，打印到终端
     with open(final_path, 'r', encoding='utf-8') as f:
         final_content = f.read()
 
@@ -68,6 +68,10 @@ def run():
     print("📊 最终分析报告（市值已自动填充）")
     print("=" * 50)
     print(final_content)
+
+    # 8. 发送到飞书（发送最终版，含真实市值）
+    print("\n📤 正在发送到飞书...")
+    post_to_feishu(final_content)
 
     print(f"\n✅ 报告已保存：{final_path}")
     print("✅ 流程结束")

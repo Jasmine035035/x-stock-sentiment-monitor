@@ -70,8 +70,11 @@ def get_us_treasury_yields():
 
 
 def get_kospi():
-    """获取韩国KOSPI指数（继续用 yfinance）"""
+    import ssl
     import yfinance as yf
+    # 仅对这个函数局部禁用SSL验证
+    old_context = ssl._create_default_https_context
+    ssl._create_default_https_context = ssl._create_unverified_context
 
     try:
         kospi = yf.Ticker("^KS11")
@@ -91,8 +94,12 @@ def get_kospi():
                 "成交量": int(hist["Volume"].iloc[-1]),
                 "方向": "↑" if pct_change > 0 else "↓"
             }
+        
     except Exception as e:
         return {"error": f"KOSPI数据获取失败: {e}"}
+    
+    finally:
+        ssl._create_default_https_context = old_context  # 恢复原设置
 
     return {"error": "无数据返回"}
 
