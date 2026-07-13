@@ -5,14 +5,14 @@ from config import (
     FETCH_DAYS,
     MAX_RESULTS_PER_USER,
     SLEEP_BETWEEN_USERS,
-    DATA_DIR,
     REPORT_DIR,
 )
 from fetch import fetch_all
 from db import save_tweets
 from report import generate_text_report, generate_summary_table, save_report
-from send_feishu import post_to_feishu
 from analyze import run_analysis
+from stock_validator import auto_fill_market_cap
+import pandas as pd
 
 
 def run():
@@ -30,7 +30,6 @@ def run():
 
     # 2. 存储
     save_tweets(raw_data)
-    import pandas as pd
     df = pd.DataFrame(raw_data)
 
     if df.empty:
@@ -47,19 +46,31 @@ def run():
 
     save_report(text_report, summary_df, report_dir=REPORT_DIR)
 
-    # 4. AI分析（快照+趋势+展望）
+    # 4. AI分析
     print("\n开始AI分析...")
     analysis_result = run_analysis(days=7)
-    print("\n" + analysis_result)
 
-    # 保存AI分析结果
-    with open(f"{REPORT_DIR}/ai_analysis_{pd.Timestamp.now().date()}.txt", "w", encoding="utf-8") as f:
+    # 5. 保存原始报告
+    today = pd.Timestamp.now().date()
+    raw_path = f"{REPORT_DIR}/ai_analysis_{today}.txt"
+    with open(raw_path, "w", encoding="utf-8") as f:
         f.write(analysis_result)
 
-    # 5. 发送到飞书（这次发AI分析结果，而不是原始报告）
-    post_to_feishu(analysis_result)
+    # 6. 自动填充市值，生成最终版
+    print("\n📊 正在自动填充市值数据...")
+    final_path = auto_fill_market_cap(raw_path)
 
-    print("\n✅ 流程结束")
+    # 7. 读取最终版内容，打印到终端
+    with open(final_path, 'r', encoding='utf-8') as f:
+        final_content = f.read()
+
+    print("\n" + "=" * 50)
+    print("📊 最终分析报告（市值已自动填充）")
+    print("=" * 50)
+    print(final_content)
+
+    print(f"\n✅ 报告已保存：{final_path}")
+    print("✅ 流程结束")
 
 
 if __name__ == "__main__":

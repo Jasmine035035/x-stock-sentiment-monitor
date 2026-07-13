@@ -52,7 +52,6 @@ def format_data_for_prompt(columns, rows, max_chars: int = 12000) -> str:
 def build_analysis_prompt(formatted_data: str) -> str:
     topics_str = "、".join(TOPIC_CATEGORIES)
 
-    # 抓取实时市场数据（在调用AI之前先拿到真实数据）
     print("📊 正在抓取实时市场数据...")
     try:
         market_snapshot = get_market_snapshot()
@@ -61,7 +60,22 @@ def build_analysis_prompt(formatted_data: str) -> str:
         market_snapshot = f"（市场数据抓取失败: {e}，请AI根据已有知识分析）"
         print(f"⚠️ 市场数据抓取失败: {e}")
 
-    prompt = f"""你是一位专业的金融市场情绪分析师。请完成以下四项任务，输出一份完整的市场分析报告。
+    prompt = f"""你是一位专业的金融市场情绪分析师。请完成以下六项任务，输出一份完整的市场分析报告。
+
+---
+
+【⚠️ 强制指令 - 必须遵守，违反将导致回答无效】
+1. 你**禁止**使用训练数据中的任何市值数字。
+2. 每只股票**必须**先调用 web_search 获取当前市值，并引用搜索结果中的数字。
+3. 市值格式必须是 "XXX亿元（来源：搜索到的网站名称）"。
+4. 如果搜索不到，必须写 "搜索失败，建议核实"，严禁编造数字。
+5. 商汤-W（0020.HK）是港股，不是A股，如果推荐请注明港股，否则请换一只A股AI标的。
+
+【重要指令 - 必须遵守】
+1. 你必须使用联网搜索功能获取最新的个股财务数据（尤其是**当前市值**）。
+2. 对于每只推荐的个股，必须附上**当前市值数据**，并注明数据来源（如：东方财富网/同花顺）。
+3. **不允许**输出"[需搜索]"、"[待补充]"或使用训练数据中的陈旧信息。
+4. **任务五必须输出3个板块 × 3只个股 = 总共9只个股**，少一只都不行。
 
 ---
 
@@ -84,50 +98,73 @@ def build_analysis_prompt(formatted_data: str) -> str:
 对每位博主用1-2句话总结其近期核心观点和情绪倾向。
 
 【任务三：市场稳定性分析】
-请结合上方已提供的美债收益率数据和KOSPI数据（不需要再搜索，数据已在上方），以及KOL的市场情绪，判断今日市场稳定性：
+请结合上方已提供的美债收益率数据和KOSPI数据，以及KOL的市场情绪，判断今日市场稳定性：
 - 分析美债收益率水平和利差变化的含义
 - 分析韩国KOSPI走势对亚洲市场的指示意义
 - 综合给出：稳定 / 偏波动 / 高风险 的判断，并说明核心依据
 
 【任务四：板块推荐】
-综合以上所有信息（KOL观点 + 美债数据 + KOSPI情况），推荐今日最值得关注的3个板块。
+综合以上所有信息，推荐今日最值得关注的3个板块。
 对每个板块提供：
 - 板块名称
 - 推荐理由（结合KOL具体观点 + 宏观数据支撑）
 - 核心逻辑链（1-2句话说清楚"为什么现在值得关注"）
 - 风险提示
 
----
 
-【任务五：个股弹性推荐】
-基于任务四推荐的3个板块，在每个板块内各推荐3只弹性最好的A股中的个股。
+【任务五：个股弹性推荐 - 必须输出3个板块 × 3只个股 = 总共9只个股】
+
+基于任务四推荐的3个板块，在**每个板块内各推荐3只**弹性最好的A股中的个股。
+
+⚠️ 强制要求：
+- **必须输出3个板块，每个板块必须推荐3只个股（总共9只个股）**
+- 全部为A股（可包含科创板、创业板）
 
 关于"弹性"的定义：
-- 弹性好的个股通常具备以下特征：流通市值相对较小（非超大盘股）、业绩或业务与所在板块主题高度绑定（纯正的标的）、历史上在同类行情中往往比板块指数涨幅更大
-- 不要求个股知名度，优先选择与板块主题高度契合、基本面支撑逻辑清晰的标的
-- 可以包括A股、港股、美股中的相关个股
+- 弹性好的个股通常具备以下特征：流通市值相对较小（50-500亿为佳）、业务与所在板块主题高度绑定
 
 对每只个股提供：
-- 股票名称及代码
-- 弹性逻辑：为什么这只股票在该板块行情中弹性会更好（要结合该板块的推荐逻辑，保持一致性）
-- 核心驱动：该公司最直接受益于当前板块行情的业务点是什么
+- 股票名称及代码（必须含6位代码 + .SH/.SZ，如：兆易创新（603986.SH））
+- 弹性逻辑
+- 核心驱动
 - 主要风险：1-2条
 
-输出格式示例：
-▶ 板块：[板块名称]
-  板块核心逻辑（一句话回顾）：[从任务四的结论中提炼]
-  
+⚠️ 重要：**不要写市值数据**，市值将由系统后台自动补充，你只需输出股票代码即可。
+
+
+【输出格式模板 - 严格按照此格式输出】：
+
+▶ 板块一：[板块名称]
+  板块核心逻辑（一句话回顾）：[从任务四中提炼]
+
   推荐个股：
-  1. [股票名称]（[代码]）
+  1. [股票名称]（[代码]，[市场]）
+     当前市值：[XX亿元]（来源：[东方财富网/同花顺]）
      弹性逻辑：[...]
      核心驱动：[...]
      主要风险：[...]
-  
-  2. [股票名称]（[代码]）
-     ...
-  
-  3. [股票名称]（[代码]）
-     ...
+
+  2. [股票名称]（[代码]，[市场]）
+     当前市值：[XX亿元]（来源：[...]）
+     弹性逻辑：[...]
+     核心驱动：[...]
+     主要风险：[...]
+
+  3. [股票名称]（[代码]，[市场]）
+     当前市值：[XX亿元]（来源：[...]）
+     弹性逻辑：[...]
+     核心驱动：[...]
+     主要风险：[...]
+
+▶ 板块二：[板块名称]
+  ...（同上格式，3只个股）
+
+▶ 板块三：[板块名称]
+  ...（同上格式，3只个股）
+
+
+【任务六：数据来源汇总】
+请列出你在任务五中获取个股市值数据的来源链接或网站名称。
 
 ---
 
@@ -136,7 +173,7 @@ def build_analysis_prompt(formatted_data: str) -> str:
     return prompt
 
 
-def run_analysis(days: int = 7, model: str = "qwen3.5-plus") -> str:
+def run_analysis(days: int = 7, model: str = "qwen-max") -> str:
     """主函数：读取SQLite数据 -> 构建prompt -> 调用Qwen（带网络搜索）-> 返回分析结果"""
     columns, rows = load_recent_tweets(days=days)
     if not rows:
@@ -145,7 +182,6 @@ def run_analysis(days: int = 7, model: str = "qwen3.5-plus") -> str:
     formatted_data = format_data_for_prompt(columns, rows)
     prompt = build_analysis_prompt(formatted_data)
 
-    # 定义网络搜索工具（Qwen支持的内置工具）
     tools = [
         {
             "type": "function",
@@ -172,18 +208,18 @@ def run_analysis(days: int = 7, model: str = "qwen3.5-plus") -> str:
             messages=[{"role": "user", "content": prompt}],
             max_tokens=3000,
             tools=tools,
-            tool_choice="auto"
+            tool_choice="auto",
+            extra_body={
+                "enable_search": True
+            }
         )
 
-        # 处理可能的多轮工具调用（Qwen可能先调用搜索，再生成最终回答）
         message = response.choices[0].message
         messages = [{"role": "user", "content": prompt}, message]
 
-        # 如果模型调用了搜索工具，继续处理
         while response.choices[0].finish_reason == "tool_calls":
             tool_calls = message.tool_calls
             for tool_call in tool_calls:
-                # 这里Qwen会自己执行搜索并返回结果，我们只需把结果回传
                 tool_result = {
                     "role": "tool",
                     "tool_call_id": tool_call.id,
@@ -196,7 +232,10 @@ def run_analysis(days: int = 7, model: str = "qwen3.5-plus") -> str:
                 messages=messages,
                 max_tokens=3000,
                 tools=tools,
-                tool_choice="auto"
+                tool_choice="auto",
+                extra_body={
+                    "enable_search": True
+                }
             )
             message = response.choices[0].message
             messages.append(message)
@@ -207,7 +246,6 @@ def run_analysis(days: int = 7, model: str = "qwen3.5-plus") -> str:
 
     except Exception as e:
         print(f"❌ AI分析出错: {e}")
-        # 如果工具调用出错，降级为无工具版本
         try:
             print("⚠️ 尝试降级为无工具模式...")
             response = client.chat.completions.create(
