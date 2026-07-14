@@ -7,12 +7,12 @@ from config import (
     SLEEP_BETWEEN_USERS,
     REPORT_DIR,
 )
-from send_feishu import post_to_feishu
 from fetch import fetch_all
 from db import save_tweets
 from report import generate_text_report, generate_summary_table, save_report
 from analyze import run_analysis
 from stock_validator import auto_fill_market_cap
+from send_feishu import post_to_feishu
 import pandas as pd
 
 
@@ -70,14 +70,15 @@ def run():
     print("=" * 50)
     print(final_content)
 
-    # 8. 发送到飞书（发送最终版，含真实市值）
-    print("\n📤 正在发送到飞书...")
+    # ============================================================
+    # 8. 发送AI分析报告到飞书
+    # ============================================================
+    print("\n📤 正在发送AI分析报告到飞书...")
     post_to_feishu(final_content)
 
     print(f"\n✅ 报告已保存：{final_path}")
     print("✅ 流程结束")
 
-    
 
 if __name__ == "__main__":
     run()
