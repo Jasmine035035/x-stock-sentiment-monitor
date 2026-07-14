@@ -7,6 +7,7 @@ from config import (
     SLEEP_BETWEEN_USERS,
     REPORT_DIR,
 )
+from send_feishu import post_to_feishu
 from fetch import fetch_all
 from db import save_tweets
 from report import generate_text_report, generate_summary_table, save_report
@@ -60,7 +61,7 @@ def run():
     print("\n📊 正在自动填充市值数据...")
     final_path = auto_fill_market_cap(raw_path)
 
-        # 7. 读取最终版内容，打印到终端
+    # 7. 读取最终版内容，打印到终端
     with open(final_path, 'r', encoding='utf-8') as f:
         final_content = f.read()
 
@@ -76,6 +77,7 @@ def run():
     print(f"\n✅ 报告已保存：{final_path}")
     print("✅ 流程结束")
 
+    
 
 if __name__ == "__main__":
     run()

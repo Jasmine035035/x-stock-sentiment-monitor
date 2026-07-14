@@ -100,9 +100,8 @@ def get_kospi():
     
     finally:
         ssl._create_default_https_context = old_context  # 恢复原设置
-
+    
     return {"error": "无数据返回"}
-
 
 def get_market_snapshot() -> str:
     """获取完整市场快照"""
